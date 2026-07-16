@@ -50,6 +50,16 @@ class LinkController extends Controller
         return ApiResponse::success(new LinkResource($link));
     }
 
+    public function destroy(Request $request, string $id): Response
+    {
+        $link = $this->findOwnedOrFail($request, $id);
+        $link->delete();
+
+        Log::info('link.deleted', ['link_id' => $link->id, 'user_id' => $request->user()->id]);
+
+        return response()->noContent();
+    }
+
     private function findOwnedOrFail(Request $request, string $id): Link
     {
         $link = Link::findOrFail($id);

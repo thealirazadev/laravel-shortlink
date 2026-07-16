@@ -12,4 +12,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/links', [LinkController::class, 'index']);
     Route::post('/links', [LinkController::class, 'store']);
     Route::get('/links/{id}', [LinkController::class, 'show']);
+    Route::delete('/links/{id}', [LinkController::class, 'destroy']);
 });
