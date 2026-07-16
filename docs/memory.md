@@ -12,9 +12,12 @@ Running log of what is done, in progress, and decided. Keep entries short and da
   - Testing note: Sanctum's guard caches the resolved user per test process, so a second in-test HTTP call reusing a just-revoked token would otherwise still authenticate; `tests/Feature/AuthTest.php` calls `Auth::forgetGuards()` between the two calls to force re-resolution. This is a test-process artifact only (real requests are separate processes and always re-resolve).
   - Environment quirk (not an app bug): `php artisan serve` fails in this sandbox with `libtidy.so.5deb1` missing for the spawned dev-server PHP process; `php -S 127.0.0.1:<port> -t public` works fine and was used for all manual verification.
 
+- 2026-07-17 — Phase 2 complete: paginated `GET /api/links` (owner-scoped), `GET /api/links/{id}` and `DELETE /api/links/{id}` (both owner-only via a shared `findOwnedOrFail` check), `errors/410.blade.php` for soft-deleted codes, `Link::isExpired()` enforced on redirect with a dedicated `errors/expired.blade.php`, and `GET /api/links/{id}/stats` (`App\Http\Controllers\Api\StatsController`, `App\Http\Resources\ClickResource`) returning totals, `clicks_by_day` (grouped in PHP over `created_at`, not a driver-specific `DATE()`/`strftime()` raw expression, so it works unchanged on both sqlite and mysql), and a capped `recent` list with no ip field. Added 11 more Pest tests (40 total), all passing; Pint clean.
+  - Bug found and fixed during manual verification, not by tests: `abort(403)` throws a plain `HttpException`, and Laravel's own exception handler converts `AuthorizationException` to `AccessDeniedHttpException` *before* our custom renderer runs (`prepareException()`), so the original `feat: add show link endpoint` commit shipped with `error.code = "server_error"` on 403s instead of `"forbidden"`. Fixed in `App\Exceptions\Handler` by matching `AccessDeniedHttpException` explicitly and by throwing `AuthorizationException` (not `abort(403)`) from controllers; covered by the non-owner tests added in this phase.
+
 ## In progress
 
-- Phase 2: link management (list/show/delete), 410 page, expiry enforcement, expired page, stats endpoint.
+- Phase 3: rate limiting/throttling, rate-limit headers, structured logging, safe click recording hardening, docs finalization.
 
 ## Decisions log
 
