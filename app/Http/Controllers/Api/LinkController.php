@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreLinkRequest;
 use App\Http\Resources\LinkResource;
+use App\Models\Link;
 use App\Support\ApiResponse;
 use App\Support\CodeGenerator;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
@@ -39,5 +41,23 @@ class LinkController extends Controller
         Log::info('link.created', ['link_id' => $link->id, 'user_id' => $request->user()->id]);
 
         return ApiResponse::success(new LinkResource($link), status: 201);
+    }
+
+    public function show(Request $request, string $id): Response
+    {
+        $link = $this->findOwnedOrFail($request, $id);
+
+        return ApiResponse::success(new LinkResource($link));
+    }
+
+    private function findOwnedOrFail(Request $request, string $id): Link
+    {
+        $link = Link::findOrFail($id);
+
+        if ($link->user_id !== $request->user()->id) {
+            throw new AuthorizationException;
+        }
+
+        return $link;
     }
 }
