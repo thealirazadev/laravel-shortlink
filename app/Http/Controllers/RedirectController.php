@@ -24,6 +24,10 @@ class RedirectController extends Controller
             return response()->view('errors.410', [], 410);
         }
 
+        if ($link->isExpired()) {
+            return response()->view('errors.410', [], 410);
+        }
+
         $this->recordClick($link, $request);
 
         return redirect()->away($link->target_url, 302);
