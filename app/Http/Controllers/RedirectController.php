@@ -25,7 +25,7 @@ class RedirectController extends Controller
         }
 
         if ($link->isExpired()) {
-            return response()->view('errors.410', [], 410);
+            return response()->view('errors.expired', [], 410);
         }
 
         $this->recordClick($link, $request);
