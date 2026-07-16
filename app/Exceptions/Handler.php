@@ -6,8 +6,8 @@ use App\Support\ApiResponse;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
@@ -21,7 +21,7 @@ use Throwable;
  */
 class Handler
 {
-    public static function render(Throwable $e, Request $request): ?Response
+    public static function render(Throwable $e, Request $request): ?JsonResponse
     {
         if (! $request->is('api/*') && ! $request->expectsJson()) {
             return null;
@@ -63,7 +63,7 @@ class Handler
         };
     }
 
-    private static function renderUnexpected(Throwable $e): Response
+    private static function renderUnexpected(Throwable $e): JsonResponse
     {
         Log::error('exception.unhandled', [
             'exception' => $e::class,
