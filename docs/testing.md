@@ -56,6 +56,16 @@ docker run --rm -v "$(pwd)":/opt -w /opt laravelsail/php82-composer:latest \
 ./vendor/bin/sail artisan migrate
 ```
 
+### Without Sail (SQLite fallback)
+
+Where Docker isn't available, drop the `./vendor/bin/sail` prefix and run the same
+commands directly against host PHP/Composer (`php artisan test`, `./vendor/bin/pest`,
+`./vendor/bin/pint --test`). The test suite always runs against an in-memory SQLite
+database regardless of the local dev driver — see the `DB_CONNECTION`/`DB_DATABASE`
+overrides in `phpunit.xml` — so this fallback does not change what the tests verify.
+This is a local development convenience only; MySQL via Sail remains the deployed
+target (`docs/architecture.md`, `docs/memory.md`).
+
 ## Definition of "done" for a feature
 
 A feature is not done until all of the following pass:

@@ -6,7 +6,7 @@ A URL shortener REST API built with Laravel. Authenticated users create short li
 
 - Token-based authentication with Laravel Sanctum (register, login, logout, issue/revoke tokens).
 - Create short links with an auto-generated unique code, a validated target URL, and an optional expiry timestamp.
-- Public redirect endpoint: `GET /{code}` issues a 301/302 redirect to the target URL.
+- Public redirect endpoint: `GET /{code}` issues a 302 redirect to the target URL.
 - Click recording on every successful redirect: referrer, user agent, and a hashed/truncated IP.
 - Per-link analytics: total clicks, unique-ish counts, recent clicks, and time-bucketed summaries.
 - List, show, and delete links scoped to the authenticated owner.
@@ -53,6 +53,22 @@ docker run --rm -v "$(pwd)":/opt -w /opt laravelsail/php82-composer:latest \
 ./vendor/bin/sail artisan migrate
 ```
 
+### Local dev without Docker (SQLite fallback)
+
+If Docker/Sail is not available, the app runs against SQLite instead of MySQL. This is a
+local-only fallback; the deployed target remains MySQL via Sail (see `docs/architecture.md`
+and the decisions log in `docs/memory.md`).
+
+```bash
+cp .env.example .env
+composer install
+touch database/database.sqlite
+# In .env, set DB_CONNECTION=sqlite (leave DB_DATABASE unset or point it at the file above)
+php artisan key:generate
+php artisan migrate
+php -S 127.0.0.1:8000 -t public
+```
+
 ## Run
 
 ```bash
@@ -79,6 +95,10 @@ docker run --rm -v "$(pwd)":/opt -w /opt laravelsail/php82-composer:latest \
 # Auto-fix formatting
 ./vendor/bin/sail bin pint
 ```
+
+Without Sail, drop the `./vendor/bin/sail` prefix and run `php artisan test`,
+`./vendor/bin/pint --test`, etc. directly; the test suite runs against an in-memory
+SQLite database regardless of the driver used for local dev (see `phpunit.xml`).
 
 Build and tests must pass before any feature is considered done. See `docs/testing.md`.
 
