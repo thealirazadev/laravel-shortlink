@@ -40,6 +40,17 @@ it('rejects an expires_at in the past', function () {
         ->assertJsonPath('error.code', 'validation_failed');
 });
 
+it('rejects a target url over the max length with 422, not a 500', function () {
+    $user = User::factory()->create();
+
+    $tooLong = 'https://example.com/'.str_repeat('a', 2048);
+
+    $this->actingAs($user, 'sanctum')
+        ->postJson('/api/links', ['target_url' => $tooLong])
+        ->assertStatus(422)
+        ->assertJsonPath('error.code', 'validation_failed');
+});
+
 it('generates distinct codes for duplicate create requests', function () {
     $user = User::factory()->create();
 
