@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\LinkController;
+use App\Http\Controllers\Api\StatsController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -13,4 +14,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/links', [LinkController::class, 'store']);
     Route::get('/links/{id}', [LinkController::class, 'show']);
     Route::delete('/links/{id}', [LinkController::class, 'destroy']);
+    Route::get('/links/{id}/stats', [StatsController::class, 'show']);
 });
