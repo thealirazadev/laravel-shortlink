@@ -7,4 +7,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/{code}', [RedirectController::class, 'show'])->where('code', '[A-Za-z0-9]+');
+Route::get('/{code}', [RedirectController::class, 'show'])
+    ->where('code', '[A-Za-z0-9]+')
+    ->middleware('throttle:redirect');
