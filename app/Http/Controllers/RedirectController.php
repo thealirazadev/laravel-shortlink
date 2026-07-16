@@ -7,11 +7,16 @@ use App\Models\Link;
 use App\Support\ClientIp;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 class RedirectController extends Controller
 {
+    // Matches the `referrer`/`user_agent` column width (see the clicks migration);
+    // truncating defensively keeps a merely long header from failing the insert.
+    private const MAX_HEADER_LENGTH = 255;
+
     public function show(string $code, Request $request): Response
     {
         $link = Link::withTrashed()->where('code', $code)->first();
@@ -45,8 +50,8 @@ class RedirectController extends Controller
         try {
             Click::create([
                 'link_id' => $link->id,
-                'referrer' => $request->header('referer'),
-                'user_agent' => $request->userAgent(),
+                'referrer' => $this->truncateHeader($request->header('referer')),
+                'user_agent' => $this->truncateHeader($request->userAgent()),
                 'ip' => ClientIp::hash($request->ip()),
                 'created_at' => now(),
             ]);
@@ -56,5 +61,10 @@ class RedirectController extends Controller
                 'reason' => $e->getMessage(),
             ]);
         }
+    }
+
+    private function truncateHeader(?string $value): ?string
+    {
+        return $value === null ? null : Str::limit($value, self::MAX_HEADER_LENGTH, '');
     }
 }
