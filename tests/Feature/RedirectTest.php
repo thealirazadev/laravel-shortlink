@@ -23,3 +23,23 @@ it('redirects an active link and records exactly one click with a hashed ip', fu
 it('returns 404 for an unknown code', function () {
     $this->get('/does-not-exist')->assertStatus(404);
 });
+
+it('returns 410 for a soft-deleted link and does not redirect', function () {
+    $link = Link::factory()->create();
+    $link->delete();
+
+    $response = $this->get('/'.$link->code);
+
+    $response->assertStatus(410);
+    $this->assertDatabaseCount('clicks', 0);
+});
+
+it('returns 410 with the expired page for an expired link and does not redirect', function () {
+    $link = Link::factory()->expired()->create();
+
+    $response = $this->get('/'.$link->code);
+
+    $response->assertStatus(410);
+    $response->assertSee('Link expired');
+    $this->assertDatabaseCount('clicks', 0);
+});
