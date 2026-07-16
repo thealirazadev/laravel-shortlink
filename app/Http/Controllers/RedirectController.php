@@ -5,19 +5,23 @@ namespace App\Http\Controllers;
 use App\Models\Click;
 use App\Models\Link;
 use App\Support\ClientIp;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 class RedirectController extends Controller
 {
-    public function show(string $code, Request $request): RedirectResponse
+    public function show(string $code, Request $request): Response
     {
-        $link = Link::where('code', $code)->first();
+        $link = Link::withTrashed()->where('code', $code)->first();
 
         if (! $link) {
             abort(404);
+        }
+
+        if ($link->trashed()) {
+            return response()->view('errors.410', [], 410);
         }
 
         $this->recordClick($link, $request);
