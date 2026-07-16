@@ -24,11 +24,16 @@ class Handler
 {
     public static function render(Throwable $e, Request $request): ?JsonResponse
     {
-        if (! $request->is('api/*') && ! $request->expectsJson()) {
+        // The redirect route (routes/web.php) renders its own 404/410/expired HTML
+        // pages, so those fall through here. Rate limiting is the one 429 case the
+        // contract says every route (including the redirect) reports as JSON.
+        $isRateLimited = $e instanceof TooManyRequestsHttpException;
+
+        if (! $request->is('api/*') && ! $request->expectsJson() && ! $isRateLimited) {
             return null;
         }
 
-        return match (true) {
+        $response = match (true) {
             $e instanceof ValidationException => ApiResponse::error(
                 'validation_failed',
                 'The given data was invalid.',
@@ -62,6 +67,14 @@ class Handler
             ),
             default => self::renderUnexpected($e),
         };
+
+        // Rate-limit headers (X-RateLimit-*, Retry-After) live on the exception,
+        // not the response we just built, so they must be copied across.
+        if ($e instanceof HttpExceptionInterface) {
+            $response->headers->add($e->getHeaders());
+        }
+
+        return $response;
     }
 
     private static function renderUnexpected(Throwable $e): JsonResponse
