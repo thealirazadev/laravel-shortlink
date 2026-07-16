@@ -5,10 +5,12 @@ Running log of what is done, in progress, and decided. Keep entries short and da
 ## Completed
 
 - 2026-07-15 — Planning documentation created (README, PRD, architecture, rules, design, api-contracts, phases, testing, memory, launch-checklist, .env.example).
+- 2026-07-17 — Phase 1, commit 1: Laravel 11.55.0 app scaffolded via `composer create-project`, dependencies pinned to exact versions (laravel/framework 11.55.0, laravel/sanctum 4.3.2, laravel/pint 1.29.3, pestphp/pest 3.8.7, laravel/sail 1.63.0, etc). `php artisan install:api` wired Sanctum + `routes/api.php`. Pest initialized (`tests/Pest.php`, `RefreshDatabase` on Feature tests). Pint clean.
+- 2026-07-17 — Phase 1, commit 2: `.env.example` documents the sqlite local-dev fallback alongside the MySQL/Sail target.
 
 ## In progress
 
-- _(nothing yet)_
+- Phase 1: migrations, models, envelope helpers, auth, code generator, create link, redirect, 404 page, tests.
 
 ## Decisions log
 
@@ -18,3 +20,4 @@ Running log of what is done, in progress, and decided. Keep entries short and da
 - 2026-07-15 — Client IPs are never stored raw; they are hashed (sha256, salted with the app key) or truncated before persistence.
 - 2026-07-15 — Single JSON envelope: `data`/`meta` for success, `error.{code,message,details}` for errors.
 - 2026-07-15 — Short codes are auto-generated only; custom vanity codes are out of scope for v1.
+- 2026-07-17 — Deviation from the decided stack (flagged per instructions, not an architecture.md change): the sandbox this project is implemented in has no working `docker-compose`/`docker compose` binary and MySQL image pulls are too slow/unreliable to complete, so Sail cannot actually boot here. `compose.yaml` (Sail, MySQL 8.4, PHP 8.2 runtime) is still committed as the documented target per architecture.md. Local dev and the automated test suite run against SQLite instead (`DB_CONNECTION=sqlite`, `database/database.sqlite` for dev, `:memory:` for tests via `phpunit.xml`). `composer install` also required setting `policy.advisories.block=false` in the global Composer config because Composer's advisory audit blocked resolution of every available laravel/framework 11.x release.
