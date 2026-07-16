@@ -17,18 +17,25 @@ class RedirectController extends Controller
         $link = Link::withTrashed()->where('code', $code)->first();
 
         if (! $link) {
+            Log::warning('redirect.not_found', ['code' => $code]);
             abort(404);
         }
 
         if ($link->trashed()) {
+            Log::info('redirect.deleted', ['link_id' => $link->id]);
+
             return response()->view('errors.410', [], 410);
         }
 
         if ($link->isExpired()) {
+            Log::info('redirect.expired', ['link_id' => $link->id]);
+
             return response()->view('errors.expired', [], 410);
         }
 
         $this->recordClick($link, $request);
+
+        Log::info('redirect.succeeded', ['link_id' => $link->id]);
 
         return redirect()->away($link->target_url, 302);
     }
