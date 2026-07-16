@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
@@ -39,7 +40,7 @@ class Handler
                 'Authentication is required.',
                 status: 401,
             ),
-            $e instanceof AuthorizationException => ApiResponse::error(
+            $e instanceof AuthorizationException, $e instanceof AccessDeniedHttpException => ApiResponse::error(
                 'forbidden',
                 'You are not authorized to perform this action.',
                 status: 403,
