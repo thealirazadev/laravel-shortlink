@@ -40,4 +40,22 @@ Running log of what is done, in progress, and decided. Keep entries short and da
 - 2026-07-15 — Client IPs are never stored raw; they are hashed (sha256, salted with the app key) or truncated before persistence.
 - 2026-07-15 — Single JSON envelope: `data`/`meta` for success, `error.{code,message,details}` for errors.
 - 2026-07-15 — Short codes are auto-generated only; custom vanity codes are out of scope for v1.
+- 2026-07-23 — Security upgrade: bumped `laravel/framework` 11.55.0 → 12.64.0 to clear
+  `composer audit`. Before: 6 advisories — 3 medium on guzzlehttp/guzzle <7.15.1 (URI fragments in
+  redirect Referer headers, host-only cookie scope not preserved, unbounded response cookies) and 3
+  on laravel/framework (high CRLF injection in the default email rule / CVE-2026-48019, fixed only in
+  12.60.0+; medium temporary signed URL path confusion, fixed only in 12.61.1+ — no 11.x patch
+  exists for either, so the 12.x major was the only route). The `composer update laravel/framework
+  --with-all-dependencies` also pulled guzzle to 7.15.1, clearing all three guzzle advisories.
+  After: zero advisories. The 11 → 12 upgrade needed no application code and no config changes: the
+  app uses none of the breaking surfaces (no `HasUuids`, no `Concurrency::run`, no `image` validation
+  rule, no `Schema::getTables()`/`getTableListing()`, no `mergeIfMissing`, no direct
+  `DatabaseTokenRepository`, no custom-named duplicate routes affected by the route-precedence
+  change), and `config/filesystems.php` already defines the `local` disk explicitly with the 12.x
+  `storage/app/private` root and `serve => true`. Sanctum 4.3.2 already allows `illuminate/* ^12.0`,
+  so it stayed pinned; Carbon was already on 3.13.1. Dev tooling (pest 3.8.7, phpunit 11.5.56,
+  collision 8.9.5, pint 1.29.3) already satisfies the Laravel-12 guide and was left untouched.
+  Laravel 12 still requires PHP ^8.2. Test suite unchanged at 34 tests / 117 assertions, pint clean.
+  Version pins in composer.json stay exact per this project's convention; updated docs/architecture.md
+  and README stack lines to Laravel 12.x. Same clean outcome as sibling laravel-uptime / hook-relay.
 - 2026-07-17 — Deviation from the decided stack (flagged per instructions, not an architecture.md change): the sandbox this project is implemented in has no working `docker-compose`/`docker compose` binary and MySQL image pulls are too slow/unreliable to complete, so Sail cannot actually boot here. `compose.yaml` (Sail, MySQL 8.4, PHP 8.2 runtime) is still committed as the documented target per architecture.md. Local dev and the automated test suite run against SQLite instead (`DB_CONNECTION=sqlite`, `database/database.sqlite` for dev, `:memory:` for tests via `phpunit.xml`). `composer install` also required setting `policy.advisories.block=false` in the global Composer config because Composer's advisory audit blocked resolution of every available laravel/framework 11.x release.
