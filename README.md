@@ -16,7 +16,7 @@ A URL shortener REST API built with Laravel. Authenticated users create short li
 
 ## Tech stack
 
-- PHP 8.2+ / Laravel 11.x
+- PHP 8.2+ / Laravel 12.x
 - Laravel Sanctum (API token auth)
 - MySQL 8.x
 - Laravel Sail (Docker: app + MySQL)
