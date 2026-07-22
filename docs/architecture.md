@@ -104,7 +104,7 @@ tests/
 
 ## Tech stack with rationale
 
-- **Laravel 11.x (PHP 8.2+)** — Batteries-included framework: routing, validation via Form Requests, Eloquent, API Resources, and a first-class testing story. Matches the requested stack.
+- **Laravel 12.x (PHP 8.2+)** — Batteries-included framework: routing, validation via Form Requests, Eloquent, API Resources, and a first-class testing story. Matches the requested stack.
 - **Laravel Sanctum** — Lightweight API token auth without the overhead of full OAuth; standard for Laravel token-based APIs.
 - **MySQL 8.x** — Reliable relational store; the data is naturally relational (users → links → clicks) and needs unique constraints and indexed lookups by code.
 - **Laravel Sail (Docker)** — Reproducible local environment bundling app + MySQL so contributors need only Docker.
