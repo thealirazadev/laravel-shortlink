@@ -37,7 +37,7 @@ Run inside the Sail containers (they wrap Docker; run from the project root).
 ./vendor/bin/sail artisan test tests/Feature/RedirectTest.php
 
 # Filter by test name
-./vendor/bin/sail artisan test --filter=redirects_active_link
+./vendor/bin/sail artisan test --filter="redirects an active link"
 
 # Formatting check (must pass; PSR-12 via Pint)
 ./vendor/bin/sail bin pint --test
