@@ -43,7 +43,7 @@ jobs:
       - name: Prepare environment
         run: |
           cp .env.example .env
-          php artisan key:generate
+          php artisan key:generate --force
 
       - name: Check formatting
         run: ./vendor/bin/pint --test
