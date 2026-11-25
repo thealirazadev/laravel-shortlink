@@ -17,3 +17,11 @@ it('hashes different ips to different values', function () {
 it('returns null for a null ip', function () {
     expect(ClientIp::hash(null))->toBeNull();
 });
+
+it('salts the hash with the app key', function () {
+    $before = ClientIp::hash('203.0.113.10');
+
+    config(['app.key' => 'base64:'.base64_encode(str_repeat('k', 32))]);
+
+    expect(ClientIp::hash('203.0.113.10'))->not->toBe($before);
+});
