@@ -83,6 +83,7 @@ Request:
 ```
 - `target_url` — required, valid `http`/`https` URL, max length enforced.
 - `expires_at` — optional, ISO-8601 datetime, must be in the future.
+  A UTC offset such as `+05:00` is honoured: the instant is stored and returned in UTC.
 
 Response `201`:
 ```json

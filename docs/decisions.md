@@ -95,6 +95,11 @@ optional `expires_at` that must be in the future, so a link cannot be created al
 `target_url` is stored as `text`, so long URLs are never truncated. Link targets cannot be edited
 after creation; a different target means a new link.
 
+Bug found in review: an `expires_at` sent with a UTC offset, such as `10:00:00+05:00`, was stored as
+`10:00:00` and read back as UTC, so the link expired five hours late. Eloquent's datetime cast
+formats a parsed value in its own offset without converting it. The controller now converts the
+value to UTC before saving, so any ISO-8601 offset expires at the instant it names.
+
 ## 11. Sanctum tokens, revoked on logout
 
 Authentication is Sanctum personal access tokens: register and login return a bearer token, and

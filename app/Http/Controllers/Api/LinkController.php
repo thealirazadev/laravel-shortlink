@@ -35,7 +35,9 @@ class LinkController extends Controller
         $link = $request->user()->links()->create([
             'code' => CodeGenerator::generate(),
             'target_url' => $request->input('target_url'),
-            'expires_at' => $request->input('expires_at'),
+            // Stored as UTC: the datetime cast formats a parsed value in its own offset, so a
+            // "+05:00" timestamp would otherwise be saved as wall-clock time and read back as UTC.
+            'expires_at' => $request->date('expires_at')?->utc(),
         ]);
 
         Log::info('link.created', ['link_id' => $link->id, 'user_id' => $request->user()->id]);
