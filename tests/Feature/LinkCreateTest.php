@@ -40,6 +40,22 @@ it('rejects an expires_at in the past', function () {
         ->assertJsonPath('error.code', 'validation_failed');
 });
 
+it('stores an expires_at sent with a utc offset as the same instant in utc', function () {
+    $user = User::factory()->create();
+    $year = now()->addYear()->year;
+
+    $response = $this->actingAs($user, 'sanctum')->postJson('/api/links', [
+        'target_url' => 'https://example.com',
+        'expires_at' => "{$year}-06-01T10:00:00+05:00",
+    ]);
+
+    $response->assertCreated()->assertJsonPath('data.expires_at', "{$year}-06-01T05:00:00Z");
+    $this->assertDatabaseHas('links', [
+        'code' => $response->json('data.code'),
+        'expires_at' => "{$year}-06-01 05:00:00",
+    ]);
+});
+
 it('rejects a target url over the max length with 422, not a 500', function () {
     $user = User::factory()->create();
 
