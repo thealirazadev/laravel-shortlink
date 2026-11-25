@@ -56,7 +56,7 @@ app/
 │   │   ├── LinkCollection.php
 │   │   └── ClickResource.php
 │   └── Middleware/
-│       └── (default Laravel middleware; no custom needed for v1)
+│       └── (default Laravel middleware; no custom middleware needed)
 ├── Models/
 │   ├── User.php
 │   ├── Link.php
@@ -177,4 +177,4 @@ Required environment variables (see `.env.example`):
 | `DB_USERNAME` | Database user. |
 | `DB_PASSWORD` | Database password. |
 
-Sanctum requires no extra env vars for token (non-SPA) usage. If SPA cookie auth is ever added it would need `SANCTUM_STATEFUL_DOMAINS` and session config, which is out of scope for v1.
+Sanctum requires no extra env vars for token (non-SPA) usage. If SPA cookie auth is ever added it would need `SANCTUM_STATEFUL_DOMAINS` and session config, which is out of scope.

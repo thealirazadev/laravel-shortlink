@@ -164,9 +164,9 @@ This route returns HTML/redirects, not JSON. It never exposes owner identity or 
 
 ## Rate limiting
 
-- **Auth endpoints** (`register`, `login`): stricter limit keyed by IP (for example 10 requests/minute). Repeated failed logins count against it.
-- **Authenticated API endpoints**: standard limit keyed by user id (for example 60 requests/minute).
-- **Public redirect**: limit keyed by IP (for example 120 requests/minute) to blunt abuse while allowing normal traffic.
+- **Auth endpoints** (`register`, `login`): stricter limit keyed by IP (10 requests/minute). Repeated failed logins count against it.
+- **Authenticated API endpoints**: standard limit keyed by user id (60 requests/minute).
+- **Public redirect**: limit keyed by IP (120 requests/minute) to blunt abuse while allowing normal traffic.
 
 On every throttled route the response includes:
 
@@ -177,4 +177,4 @@ On every throttled route the response includes:
 | `Retry-After` | Seconds until the limit resets (present on `429`). |
 | `X-RateLimit-Reset` | Unix timestamp when the window resets (present on `429`). |
 
-Exceeding the limit returns `429` with the error envelope and `error.code = "rate_limited"`. Exact numeric limits are configuration and are finalized in Phase 3; the shape of the behavior and headers is fixed here.
+Exceeding the limit returns `429` with the error envelope and `error.code = "rate_limited"`, on the redirect route as well as the API. The limits are defined as named rate limiters in `App\Providers\AppServiceProvider`.
