@@ -36,7 +36,7 @@ View stats   ──GET /api/links/{id}/stats──▶  authorize owner
 
 The public redirect route lives in `routes/web.php` (it returns HTTP redirects and HTML, not JSON).
 
-## Proposed folder / file tree
+## Folder / file tree
 
 ```
 app/
@@ -51,12 +51,9 @@ app/
 │   │   ├── RegisterRequest.php
 │   │   ├── LoginRequest.php
 │   │   └── StoreLinkRequest.php
-│   ├── Resources/
-│   │   ├── LinkResource.php
-│   │   ├── LinkCollection.php
-│   │   └── ClickResource.php
-│   └── Middleware/
-│       └── (default Laravel middleware; no custom middleware needed)
+│   └── Resources/
+│       ├── LinkResource.php
+│       └── ClickResource.php
 ├── Models/
 │   ├── User.php
 │   ├── Link.php
@@ -71,9 +68,11 @@ app/
 database/
 ├── migrations/
 │   ├── 0001_01_01_000000_create_users_table.php
-│   ├── 0001_01_01_000001_create_personal_access_tokens_table.php
-│   ├── 2026_01_01_000100_create_links_table.php
-│   └── 2026_01_01_000200_create_clicks_table.php
+│   ├── 0001_01_01_000001_create_cache_table.php
+│   ├── 0001_01_01_000002_create_jobs_table.php
+│   ├── 2026_07_16_204620_create_personal_access_tokens_table.php
+│   ├── 2026_07_16_205228_create_links_table.php
+│   └── 2026_07_16_205229_create_clicks_table.php
 ├── factories/
 │   ├── UserFactory.php
 │   ├── LinkFactory.php
@@ -95,6 +94,7 @@ tests/
 │   ├── AuthTest.php
 │   ├── LinkCreateTest.php
 │   ├── LinkListShowDeleteTest.php
+│   ├── RateLimitingTest.php
 │   ├── RedirectTest.php
 │   └── StatsTest.php
 └── Unit/

@@ -122,11 +122,11 @@ hashes, so keep it stable: rotating it makes new hashes incomparable with old on
 ```
 laravel-shortlink/
 ├── app/
+│   ├── Exceptions/           # Handler: renders API errors into the JSON envelope
 │   ├── Http/
 │   │   ├── Controllers/      # Auth, Link, Stats, Redirect controllers
 │   │   ├── Requests/         # Form requests (server-side validation)
-│   │   ├── Resources/        # API resources (JSON shaping)
-│   │   └── Middleware/       # Envelope / throttle helpers if needed
+│   │   └── Resources/        # API resources (JSON shaping)
 │   ├── Models/               # User, Link, Click
 │   └── Support/              # Code generator, IP hashing helpers
 ├── database/migrations/      # users, links, clicks, personal_access_tokens
