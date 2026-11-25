@@ -57,7 +57,7 @@ docker run --rm -v "$(pwd)":/opt -w /opt laravelsail/php82-composer:latest \
 
 If Docker/Sail is not available, the app runs against SQLite instead of MySQL. This is a
 local-only fallback; the deployed target remains MySQL via Sail (see `docs/architecture.md`
-and the decisions log in `docs/memory.md`).
+and `docs/decisions.md`).
 
 ```bash
 cp .env.example .env
@@ -100,7 +100,22 @@ Without Sail, drop the `./vendor/bin/sail` prefix and run `php artisan test`,
 `./vendor/bin/pint --test`, etc. directly; the test suite runs against an in-memory
 SQLite database regardless of the driver used for local dev (see `phpunit.xml`).
 
-Build and tests must pass before any feature is considered done. See `docs/testing.md`.
+Build and tests must pass before any feature is considered done. See `docs/testing.md` for the
+test strategy and what CI runs.
+
+## Documentation
+
+- [`docs/architecture.md`](docs/architecture.md) - request flows, folder structure, data model, stack rationale
+- [`docs/api-contracts.md`](docs/api-contracts.md) - every endpoint, the response envelopes, rate limits
+- [`docs/design.md`](docs/design.md) - the HTML error and redirect pages
+- [`docs/testing.md`](docs/testing.md) - test strategy, commands, and CI
+- [`docs/decisions.md`](docs/decisions.md) - design decisions and the reasons behind them
+
+## Production notes
+
+Set `APP_ENV=production`, `APP_DEBUG=false` and `APP_URL` to the public host (short URLs are built
+from it), serve over HTTPS, and run `php artisan migrate --force`. `APP_KEY` also keys the stored IP
+hashes, so keep it stable: rotating it makes new hashes incomparable with old ones.
 
 ## Structure
 
@@ -118,8 +133,7 @@ laravel-shortlink/
 ├── resources/views/errors/   # 404, 410, expired Blade pages
 ├── routes/                   # api.php, web.php
 ├── tests/                    # Feature + Unit (Pest)
-└── docs/                     # PRD, architecture, rules, design, api-contracts,
-                              # phases, testing, memory, launch-checklist
+└── docs/                     # architecture, api-contracts, design, testing, decisions
 ```
 
 ## License

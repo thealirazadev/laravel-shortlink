@@ -1,30 +1,42 @@
-# Testing — laravel-shortlink
+# Testing - laravel-shortlink
 
 ## Strategy
 
-- **Automated first, manual second.** Every feature ships with automated tests. Manual QA (see the phase checklists) covers browser behavior of redirect/HTML pages and rate-limit headers that are awkward to assert.
-- **Pest on PHPUnit.** Use Pest's expressive syntax; the underlying engine is PHPUnit, so both `pest` and `artisan test` work. Prefer feature tests for HTTP behavior and unit tests for isolated helpers.
-- **Test database.** Use a dedicated test connection with `RefreshDatabase` so each test runs against a clean schema. Never run tests against the development database.
-- **Factories** for `User`, `Link`, `Click` drive setup; do not hand-build rows in tests.
+- **Automated first, manual second.** Every feature ships with automated tests. Manual checks
+  cover what is awkward to assert in a test: how the redirect and HTML error pages behave in a
+  real browser, and rate-limit headers against a running server.
+- **Pest on PHPUnit.** Pest's syntax on the PHPUnit engine, so both `pest` and `artisan test` work.
+  Feature tests cover HTTP behavior; unit tests cover isolated helpers.
+- **Test database.** `phpunit.xml` overrides `DB_CONNECTION`/`DB_DATABASE` to in-memory SQLite and
+  feature tests use `RefreshDatabase`, so every test runs against a clean schema and never touches
+  the development database, whichever driver local dev uses.
+- **Factories** for `User`, `Link` and `Click` drive setup; rows are not hand-built in tests.
 
-### What to cover
+### What is covered
 
 Feature tests:
-- Auth: register success/validation, login success/bad credentials, logout revokes token, protected route without token → 401.
-- Create link: valid → 201 with unique code and correct `short_url`; invalid/non-http URL → 422; past `expires_at` → 422.
-- Redirect: active → 302 to target and one click row (hashed IP, not raw); unknown → 404; deleted → 410; expired → expired page.
-- List/show/delete: owner-scoping, pagination, empty state, non-owner → 403, missing → 404, delete → 204 then 410.
-- Stats: totals and `clicks_by_day` match seeded clicks; `recent` exposes no IPs; owner-only.
-- Rate limiting: exceeding a limit → 429 with the error envelope and rate-limit headers.
-- Envelope shape: success and error responses match the documented JSON exactly.
+- Auth: register success and validation, login success and a safe message on a wrong password,
+  logout revokes the token so reuse yields 401, a protected route without a token yields 401.
+- Create link: valid request returns 201 with a unique code and `short_url`; non-http URL, past
+  `expires_at` and an over-length URL return 422; duplicate create requests get distinct codes.
+- Redirect: an active link redirects with 302 and records exactly one click with a hashed IP;
+  unknown code 404; deleted link 410; expired link 410 with the expired page; a failed click insert
+  still redirects and logs the failure; an over-long user agent is truncated, not fatal.
+- List, show, delete: owner scoping and pagination, the empty list, non-owner 403, missing 404,
+  soft delete followed by 410 on the code.
+- Stats: totals and `clicks_by_day` match recorded clicks, `recent` exposes no IPs, non-owner 403,
+  missing link 404.
+- Rate limiting: exceeding the auth limit returns 429 with the error envelope and rate-limit
+  headers; a different IP is not affected.
 
 Unit tests:
-- `CodeGenerator`: produces unique codes of the expected length/alphabet; retries on collision.
-- `ClientIp`: never returns the raw IP; same IP → same hash; different IP → different hash.
+- `CodeGenerator`: expected length and alphabet; retries until a code is free.
+- `ClientIp`: never returns the raw IP; the same IP hashes the same; different IPs hash
+  differently; a null IP stays null.
 
 ## Exact commands
 
-Run inside the Sail containers (they wrap Docker; run from the project root).
+Inside the Sail containers (run from the project root):
 
 ```bash
 # Full test suite
@@ -37,7 +49,7 @@ Run inside the Sail containers (they wrap Docker; run from the project root).
 ./vendor/bin/sail artisan test tests/Feature/RedirectTest.php
 
 # Filter by test name
-./vendor/bin/sail artisan test --filter=redirects_active_link
+./vendor/bin/sail artisan test --filter="hashed ip"
 
 # Formatting check (must pass; PSR-12 via Pint)
 ./vendor/bin/sail bin pint --test
@@ -46,7 +58,7 @@ Run inside the Sail containers (they wrap Docker; run from the project root).
 ./vendor/bin/sail bin pint
 ```
 
-First-time or CI setup (no host PHP required):
+First-time setup with Sail (no host PHP required):
 
 ```bash
 docker run --rm -v "$(pwd)":/opt -w /opt laravelsail/php82-composer:latest \
@@ -56,22 +68,23 @@ docker run --rm -v "$(pwd)":/opt -w /opt laravelsail/php82-composer:latest \
 ./vendor/bin/sail artisan migrate
 ```
 
-### Without Sail (SQLite fallback)
+### Without Sail
 
-Where Docker isn't available, drop the `./vendor/bin/sail` prefix and run the same
-commands directly against host PHP/Composer (`php artisan test`, `./vendor/bin/pest`,
-`./vendor/bin/pint --test`). The test suite always runs against an in-memory SQLite
-database regardless of the local dev driver — see the `DB_CONNECTION`/`DB_DATABASE`
-overrides in `phpunit.xml` — so this fallback does not change what the tests verify.
-This is a local development convenience only; MySQL via Sail remains the deployed
-target (`docs/architecture.md`, `docs/memory.md`).
+Drop the `./vendor/bin/sail` prefix and run the same commands against host PHP and Composer
+(`php artisan test`, `./vendor/bin/pest`, `./vendor/bin/pint --test`). The suite runs on in-memory
+SQLite either way, so this does not change what the tests verify.
+
+## Continuous integration
+
+`.github/workflows/ci.yml` runs on every push and pull request to `main`, on a PHP 8.2, 8.3 and 8.4
+matrix, without Sail. After `composer install` it copies `.env.example` to `.env`, runs
+`php artisan key:generate --force`, and then runs, in order:
+
+1. `./vendor/bin/pint --test` - no style violations.
+2. `php artisan test` - the full suite on in-memory SQLite.
 
 ## Definition of "done" for a feature
 
-A feature is not done until all of the following pass:
-
-1. `./vendor/bin/sail bin pint --test` — no style violations.
-2. `./vendor/bin/sail artisan test` — the full suite is green (new tests included).
-3. The feature's manual checklist items in `docs/phases.md` pass.
-
-Build and tests must pass before a feature is committed. One commit per feature, in the order listed in `docs/phases.md`.
+1. `./vendor/bin/pint --test` passes.
+2. `php artisan test` passes, new tests included.
+3. The relevant manual checks pass.
